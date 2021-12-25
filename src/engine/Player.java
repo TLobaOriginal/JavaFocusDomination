@@ -6,7 +6,7 @@ public class Player {
     private int numPiecesCaptured;
     Colour playerColour;
 
-    Player(String name, int numPieces, Colour playerColour){
+    public Player(String name, int numPieces, Colour playerColour){
         this.name = name;
         this.numPieces = numPieces;
         numPiecesCaptured = 0;

@@ -1,7 +1,12 @@
 package engine;
 
+import javafx.application.Application;
+import javafx.stage.Stage;
+
 public class Board {
     private Square[][] board;
+    Player currentPlayer;
+    Player player1, player2;
 
     public Board(){
         board = new Square[BoardUtils.ROW_SIZE][BoardUtils.COL_SIZE];
@@ -30,3 +35,4 @@ public class Board {
         }
     }
 }
+
