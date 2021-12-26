@@ -13,24 +13,19 @@ public class BoardUtils {
                 if(isInvalidCase(i, j)){
                     board[i][j].setSquareType(SquareType.INVALID);
                     board[i][j].setSquareColour(Colour.NONE);
-                    // System.out.println("Invalid case -> i: " + i + " j: " + j);
                 }
                 else{
                     board[i][j].setSquareType(SquareType.VALID);
                     if(isEmptyCase(i, j)){
                         board[i][j].setSquareColour(Colour.NONE);
-                        /* if(board[i][j].getSquareColour().isUnOccupied())
-                            System.out.println("Empty case -> i: " + i + " j: " + j);*/
                     }
                     else if(isRedCase(i, j)){
                         board[i][j].setSquareColour(Colour.RED);
-                        /* if(board[i][j].getSquareColour().isRed())
-                            System.out.println("Red case -> i: " + i + " j: " + j);*/
+                        board[i][j].getStack().push(new Piece(Colour.RED));
                     }
                     else if(isGreenCase(i , j)){
                         board[i][j].setSquareColour(Colour.GREEN);
-                        /* if(board[i][j].getSquareColour().isGreen())
-                            System.out.println("Green case -> i: " + i + " j: " + j);*/
+                        board[i][j].getStack().push(new Piece(Colour.GREEN));
                     }
                 }
             }

@@ -18,7 +18,15 @@ public class PieceStack {
         this.topColour = topColour;
     }
 
-    public Stack<Piece> getStack() {
+    /*public Stack<Piece> getStack() {
         return stack;
+    }*/
+
+    public void push(Piece piece){stack.push(piece);}
+
+    public Piece pop(){return stack.pop();}
+
+    public int numberOfPieces(){
+        return stack.size();
     }
 }

@@ -8,9 +8,24 @@ public class Board {
     Player currentPlayer;
     Player player1, player2;
 
-    public Board(){
+    public Board(Player player1, Player player2){
         board = new Square[BoardUtils.ROW_SIZE][BoardUtils.COL_SIZE];
         BoardUtils.initialiseBoard(board);
+        this.player1 = player1;
+        this.player2 = player2;
+        currentPlayer = player1;
+    }
+
+    public Player getPlayer1() {
+        return player1;
+    }
+
+    public Player getPlayer2() {
+        return player2;
+    }
+
+    public Player getCurrentPlayer() {
+        return currentPlayer;
     }
 
     public Square[][] getBoard() {
