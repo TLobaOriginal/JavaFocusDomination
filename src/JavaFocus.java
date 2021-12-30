@@ -17,11 +17,14 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.TextField;
 
-import java.awt.event.MouseEvent;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class JavaFocus extends Application {
-    Board board;
+   private Board board;
+    //This will be used to see whether a move can be submitted
+    private int sourceRow = 0, sourceCol = 0, destinationRow = 0, destinationCol = 0;
 
     public static void main(String[] args) {
         launch(args);
@@ -87,7 +90,7 @@ public class JavaFocus extends Application {
 
     //This is the game playing screen
     private void gamePlaying(Stage primaryStage){
-        Parent parent = createBoard(board);
+        AtomicReference<Parent> parent = new AtomicReference<>(createBoard(board));
         board.prettyPrint();
 
 
@@ -149,25 +152,54 @@ public class JavaFocus extends Application {
         player2 = new Pane(p2Box);
         player2.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
 
-        VBox gameInfoContainer = new VBox(player1, player2);
-        HBox gameLayout = new HBox(parent, gameInfoContainer);
+        Button playMove = new Button("Submit Move");
+        VBox gameInfoContainer = new VBox(player1, player2, playMove);
+        AtomicReference<HBox> gameLayout = new AtomicReference<>(new HBox(parent.get(), gameInfoContainer));
 
-        StackPane layout = new StackPane();
-        layout.getChildren().add(gameLayout);
 
-        Scene gamePlay = new Scene(layout, 1100, 500);
-        primaryStage.setScene(gamePlay);
+
+        AtomicReference<StackPane> layout = new AtomicReference<>(new StackPane());
+        layout.get().getChildren().add(gameLayout.get());
+
+        AtomicReference<Scene> gamePlay = new AtomicReference<>(new Scene(layout.get(), 1100, 500));
+        primaryStage.setScene(gamePlay.get());
         primaryStage.show();
 
-        play();
+        playMove.setOnMouseClicked(event -> {
+            if(destinationCol >= 0 && destinationRow >= 0 && sourceCol >= 0 && sourceRow >= 0){
+                int steps = board.getBoard()[destinationCol][destinationRow].getStack().numberOfPieces();
+                if(distance(destinationRow, destinationCol, sourceRow, sourceCol) <= steps){
+                    board.changePlayer();
+                    board.makeMove(destinationRow, destinationCol, sourceRow, sourceCol);
+                }
+                else
+                    System.out.println("Error: Too many steps, submit a new move");
+            }
+            else    //TODO soon to be changed with a textfield that will communicate with the players. We mainly want a working solution
+            {
+                System.out.println("Invalid Move, submit a new move");
+            }
+            this.destinationRow = - 1;
+            sourceRow = sourceCol = destinationCol = destinationRow;
+
+            parent.set(createBoard(board));
+            gameLayout.set(new HBox(parent.get(), gameInfoContainer, playMove));
+            layout.set(new StackPane(gameLayout.get()));
+            gamePlay.set(new Scene(layout.get(), 1100, 500));
+            primaryStage.setScene(gamePlay.get());
+            primaryStage.show();
+
+            //board.prettyPrint();
+        });
+
     }
 
-    private void play() {
-        //This will control the game flow
-
+    private int distance(int destinationRow, int destinationCol, int sourceRow, int sourceCol){
+        return Math.abs(destinationRow - sourceRow) + Math.abs(destinationCol - sourceCol);
     }
 
-    public static Parent createBoard(Board board){
+
+    public Parent createBoard(Board board){
         GridPane gameBoardGrid = new GridPane();
         gameBoardGrid.setPrefSize(755, 755);
         Square[][] gameBoard = board.getBoard();
@@ -176,6 +208,10 @@ public class JavaFocus extends Application {
         //Holds values of the selected pieces
         final Square[] finalSelect1 = {selected1};
         final Square[] finalSelect2 = {selected2};
+        AtomicInteger sourceX = new AtomicInteger();
+        AtomicInteger sourceY = new AtomicInteger();
+        AtomicInteger destinationX = new AtomicInteger(-1);
+        AtomicInteger destinationY = new AtomicInteger(-1);
 
         for (int i = 0; i < gameBoard.length; i++) {
             for (int j = 0; j < gameBoard[i].length; j++) {
@@ -200,9 +236,10 @@ public class JavaFocus extends Application {
                         text.setFont(Font.font(40));
                         gameBoardGrid.add(new StackPane(tile, text), j, i);
 
-
                         tile.setOnMouseClicked(event ->{
                             if (finalSelect2[0] == gameBoard[finalI][finalJ]){
+                                this.destinationRow = -1;
+                                this.destinationCol = -1;
                                 finalSelect2[0] = null;
                                 if (colour.isRed())
                                     deselectMove(tile, Color.RED);
@@ -214,12 +251,15 @@ public class JavaFocus extends Application {
                             else if(finalSelect1[0] != null && finalSelect2[0] == null){
                                 finalSelect2[0] = gameBoard[finalI][finalJ];
                                 highlightMove(tile);
+                                destinationY.set(finalI);
+                                destinationX.set(finalJ);
+                                this.destinationRow = destinationY.get();
+                                this.destinationCol = destinationX.get();
+                                //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                             }
                         });
                         selected1 = finalSelect1[0];
                         selected2 = finalSelect2[0];
-
-                        //TODO Deal with picking squares as a player when it is your turn.
                     } else if(square.getSquareColour().isGreen()){
                         //If it is green then we make the tile green
                         tile.setFill(Color.GREEN);
@@ -228,20 +268,26 @@ public class JavaFocus extends Application {
                         text.setFont(Font.font(40));
                         drawMove(text, gameBoard, i, j);
                         gameBoardGrid.add(new StackPane(tile, text), j, i);
-                        //GridPane.setRowIndex(tile, i);
-                        //GridPane.setColumnIndex(tile, j);
                         if(board.getCurrentPlayer().getPlayerColour().isGreen()){
                             tile.setOnMouseClicked(event ->{
                                 if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
                                     finalSelect1[0] = gameBoard[finalI][finalJ];
+                                    sourceY.set(finalI);
+                                    sourceX.set(finalJ);
+                                    this.sourceCol = sourceY.get();
+                                    this.sourceRow = sourceX.get();
                                     highlightMove(tile); //Highlights tile
                                 }
                                 else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
                                     finalSelect1[0] = null;
+                                    this.sourceCol = -1;
+                                    this.sourceRow = -1;
                                     deselectMove(tile, Color.GREEN);
                                 }
                                 else if (finalSelect2[0] == gameBoard[finalI][finalJ]){
                                     finalSelect2[0] = null;
+                                    this.destinationRow = -1;
+                                    this.destinationCol = -1;
                                     if (colour.isRed())
                                         deselectMove(tile, Color.RED);
                                     else if(colour.isGreen())
@@ -251,7 +297,12 @@ public class JavaFocus extends Application {
                                 }
                                 else if(finalSelect2[0] == null){
                                     finalSelect2[0] = gameBoard[finalI][finalJ];
+                                    destinationY.set(finalI);
+                                    destinationX.set(finalJ);
+                                    this.destinationCol = destinationY.get();
+                                    this.destinationRow = destinationX.get();
                                     highlightMove(tile);
+                                    //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                                 }
                             });
                             selected1 = finalSelect1[0];
@@ -260,6 +311,8 @@ public class JavaFocus extends Application {
                         else{
                             tile.setOnMouseClicked(event ->{
                                 if (finalSelect2[0] == gameBoard[finalI][finalJ]){
+                                    this.destinationRow = -1;
+                                    this.destinationCol = -1;
                                     finalSelect2[0] = null;
                                     if (colour.isRed())
                                         deselectMove(tile, Color.RED);
@@ -271,11 +324,14 @@ public class JavaFocus extends Application {
                                 else if(finalSelect1[0] != null && finalSelect2[0] == null){
                                     finalSelect2[0] = gameBoard[finalI][finalJ];
                                     highlightMove(tile);
+                                    destinationY.set(finalI);
+                                    destinationX.set(finalJ);
+                                    this.destinationCol = destinationY.get();
+                                    this.destinationRow = destinationX.get();
+                                    //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                                 }
                             });
                         }
-                        //TODO Deal with picking squares as a player when it is your turn.
-
                     } else{
                         //If Red then we make the tile red
                         tile.setFill(Color.RED);
@@ -290,12 +346,20 @@ public class JavaFocus extends Application {
                                 if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
                                     finalSelect1[0] = gameBoard[finalI][finalJ];
                                     highlightMove(tile); //Highlights tile
+                                    sourceY.set(finalI);
+                                    sourceX.set(finalJ);
+                                    this.sourceCol = sourceY.get();
+                                    this.sourceRow = sourceX.get();
                                 }
                                 else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
                                     finalSelect1[0] = null;
+                                    this.sourceRow = -1;
+                                    this.sourceCol = -1;
                                     deselectMove(tile, Color.RED);
                                 }
                                 else if (finalSelect2[0] == gameBoard[finalI][finalJ]){
+                                    this.destinationRow = -1;
+                                    this.destinationCol = -1;
                                     finalSelect2[0] = null;
                                     if (colour.isRed())
                                         deselectMove(tile, Color.RED);
@@ -307,6 +371,12 @@ public class JavaFocus extends Application {
                                 else if(finalSelect2[0] == null){
                                     finalSelect2[0] = gameBoard[finalI][finalJ];
                                     highlightMove(tile);
+                                    destinationY.set(finalI);
+                                    destinationX.set(finalJ);
+                                    this.destinationCol = destinationY.get();
+                                    this.destinationRow = destinationX.get();
+
+                                    //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                                 }
                             });
                             selected1 = finalSelect1[0];
@@ -314,6 +384,8 @@ public class JavaFocus extends Application {
                         } else {
                             tile.setOnMouseClicked(event -> {
                                 if (finalSelect2[0] == gameBoard[finalI][finalJ]) {
+                                    this.destinationRow = -1;
+                                    this.destinationCol = -1;
                                     finalSelect2[0] = null;
                                     if (colour.isRed())
                                         deselectMove(tile, Color.RED);
@@ -324,10 +396,15 @@ public class JavaFocus extends Application {
                                 } else if (finalSelect1[0] != null && finalSelect2[0] == null) {
                                     finalSelect2[0] = gameBoard[finalI][finalJ];
                                     highlightMove(tile);
+                                    destinationY.set(finalI);
+                                    destinationX.set(finalJ);
+                                    this.destinationCol = destinationY.get();
+                                    this.destinationRow = destinationX.get();
+
+                                    //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                                 }
                             });
                         }
-                        //TODO Deal with picking squares as a player when it is your turn.
                     }
                 }
                 finalSelect1[0] = selected1;

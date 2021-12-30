@@ -8,10 +8,9 @@ public class BoardUtils {
     public static void initialiseBoard(Square[][] board){
         for(int i = 0; i < board.length; i++){
             for(int j = 0; j < board[i].length; j++){
-                board[i][j] = new Square(SquareType.INVALID);
+                board[i][j] = new Square(SquareType.INVALID, i, j);
                 /*Now we should do the if statements to check and see if the current square is VALID or INVALID*/
                 if(isInvalidCase(i, j)){
-                    board[i][j].setSquareType(SquareType.INVALID);
                     board[i][j].setSquareColour(Colour.NONE);
                 }
                 else{

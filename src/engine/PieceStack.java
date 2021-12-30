@@ -1,4 +1,5 @@
 package engine;
+import java.util.ArrayList;
 import java.util.Stack;
 public class PieceStack {
 
@@ -29,4 +30,41 @@ public class PieceStack {
     public int numberOfPieces(){
         return stack.size();
     }
+
+    public boolean isEmpty(){
+        topColour = Colour.NONE;
+        return stack.isEmpty();
+    }
+
+    public void prettyPrint(){
+        while(!stack.isEmpty()){
+            System.out.println(stack.pop().getColour().toString() + " - ");
+        }
+    }
+
+    //TODO fix bug of moving to empty square with stack that contains opponents piece
+    //TODO sometimes the wrong top colour is initialised whenever we move a stack to a square that has an existing stack
+    public void mergeStack(PieceStack incomingStack){
+        /*if(stack.isEmpty())
+        {
+            topColour = incomingStack.getTopColour();
+            while(!incomingStack.isEmpty()){
+                stack.push(incomingStack.pop());
+            }
+            incomingStack.reverseStack();
+        }
+        else{
+            reverseStack();
+            while(!incomingStack.isEmpty())
+                stack.push(incomingStack.pop());
+            topColour = stack.peek().getColour();
+        }*/
+        ArrayList<Piece> incomingStackPieces = new ArrayList<>();
+        while(!incomingStack.isEmpty())
+            incomingStackPieces.add(incomingStack.pop());
+        for(int i = incomingStackPieces.size() - 1; i >= 0; i--)
+            stack.push(incomingStackPieces.remove(i));
+        topColour = stack.peek().getColour();
+    }
+
 }

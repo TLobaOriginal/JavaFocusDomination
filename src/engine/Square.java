@@ -2,12 +2,15 @@ package engine;
 
 public class Square {
     private SquareType squareType;
-    //private Colour squareColour;
+    int row;
+    int column;
     PieceStack stack;
     //TODO Add a stack which will represent a stack of pieces
 
-    public Square(SquareType squareType){
+    public Square(SquareType squareType, int row, int column){
         this.squareType = squareType;
+        this.row = row;
+        this.column = column;
         stack = new PieceStack();
     }
 
@@ -29,6 +32,14 @@ public class Square {
 
     public PieceStack getStack() {
         return stack;
+    }
+
+    public int getColumn() {
+        return column;
+    }
+
+    public int getRow() {
+        return row;
     }
 
     @Override

@@ -1,8 +1,5 @@
 package engine;
 
-import javafx.application.Application;
-import javafx.stage.Stage;
-
 public class Board {
     private Square[][] board;
     Player currentPlayer;
@@ -15,6 +12,17 @@ public class Board {
         this.player2 = player2;
         currentPlayer = player1;
     }
+
+    public void changePlayer(){
+        if(currentPlayer.equals(player1))
+            currentPlayer = player2;
+        else
+            currentPlayer = player1;
+    }
+
+    /*public boolean isPlayer1Turn(){
+        return currentPlayer.equals(player1);
+    }*/
 
     public Player getPlayer1() {
         return player1;
@@ -30,6 +38,13 @@ public class Board {
 
     public Square[][] getBoard() {
         return board;
+    }
+
+    public void makeMove(int destinationX, int destinationY, int sourceX, int sourceY){
+        Square sourceSquare = board[sourceY][sourceX];
+        Square destinationSquare = board[destinationY][destinationX];
+
+        destinationSquare.getStack().mergeStack(sourceSquare.getStack());
     }
 
     public void prettyPrint(){
