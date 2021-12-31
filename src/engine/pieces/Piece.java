@@ -1,9 +1,11 @@
-package engine;
+package engine.pieces;
+
+import engine.Colour;
 
 public class Piece {
     private Colour colour;
 
-    Piece(Colour colour){
+    public Piece(Colour colour){
         this.colour = colour;
     }
 

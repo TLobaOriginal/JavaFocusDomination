@@ -1,4 +1,8 @@
-package engine;
+package engine.board;
+
+import engine.Colour;
+import engine.Player;
+import engine.square.Square;
 
 public class Board {
     private Square[][] board;

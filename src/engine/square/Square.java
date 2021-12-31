@@ -1,4 +1,6 @@
-package engine;
+package engine.square;
+import engine.Colour;
+import engine.pieces.PieceStack;
 
 public class Square {
     private SquareType squareType;

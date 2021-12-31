@@ -1,5 +1,7 @@
 package engine;
 
+import engine.pieces.Piece;
+
 public class Player {
     private String name;
     private int numPieces;

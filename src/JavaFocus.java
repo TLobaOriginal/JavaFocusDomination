@@ -1,7 +1,7 @@
-import engine.Board;
+import engine.board.Board;
 import engine.Colour;
 import engine.Player;
-import engine.Square;
+import engine.square.Square;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;

@@ -1,4 +1,9 @@
-package engine;
+package engine.board;
+
+import engine.Colour;
+import engine.pieces.Piece;
+import engine.square.Square;
+import engine.square.SquareType;
 
 public class BoardUtils {
     public final static int BOARD_SIZE = 64;

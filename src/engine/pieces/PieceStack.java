@@ -1,14 +1,16 @@
-package engine;
-import java.util.ArrayList;
+package engine.pieces;
+import engine.Colour;
+import engine.Player;
+
 import java.util.LinkedList;
-import java.util.Stack;
+
 public class PieceStack {
     /*We can implement the Piece stack as a LinkedList*/
     //private Stack<Piece> stack;
     LinkedList<Piece> stack; //TODO turn to private when needed
     private Colour topColour;
 
-    PieceStack(){
+    public PieceStack(){
         stack = new LinkedList<>();
         topColour = Colour.NONE;
     }
