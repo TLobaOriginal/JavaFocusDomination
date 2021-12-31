@@ -28,6 +28,10 @@ public class Player {
         return numCaptured;
     }
 
+    public void useReinforcement(){
+        numReinforcementPieces--;
+    }
+
     //Getter Methods
     public Colour getPlayerColour() {
         return playerColour;
@@ -54,7 +58,7 @@ public class Player {
         this.name = name;
     }
 
-    protected void setNumPieces(int numPieces) {
+    public void setNumPieces(int numPieces) {
         this.numPieces = numPieces;
     }
 /*

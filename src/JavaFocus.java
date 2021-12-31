@@ -188,6 +188,9 @@ public class JavaFocus extends Application {
                             "Distance: " + distance(dCol, dRow, sCol, sRow) + "\n" +
                             "Allowed steps: " + steps);
             }
+            else if(((sRow >= 0 && sCol >= 0) && board.getCurrentPlayer().getNumReinforcementPieces() > 0)){
+                board.makeMove(sRow, sCol);
+            }
             else    //TODO soon to be changed with a textfield that will communicate with the players. We mainly want a working solution
             {
                 System.out.println("Invalid Move, submit a new move");
@@ -228,8 +231,8 @@ public class JavaFocus extends Application {
         //Holds values of the selected pieces
         final Square[] finalSelect1 = {selected1};
         final Square[] finalSelect2 = {selected2};
-        AtomicInteger sourceX = new AtomicInteger();
-        AtomicInteger sourceY = new AtomicInteger();
+        AtomicInteger sourceX = new AtomicInteger(-1);
+        AtomicInteger sourceY = new AtomicInteger(-1);
         AtomicInteger destinationX = new AtomicInteger(-1);
         AtomicInteger destinationY = new AtomicInteger(-1);
 
@@ -257,25 +260,45 @@ public class JavaFocus extends Application {
                         gameBoardGrid.add(new StackPane(tile, text), j, i);
 
                         tile.setOnMouseClicked(event ->{
-                            if (finalSelect2[0] == gameBoard[finalI][finalJ]){
-                                this.dCol = -1;
-                                this.dRow = -1;
-                                finalSelect2[0] = null;
-                                if (colour.isRed())
-                                    deselectMove(tile, Color.RED);
-                                else if(colour.isGreen())
-                                    deselectMove(tile, Color.GREEN);
-                                else
+                            if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                                if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
+                                    finalSelect1[0] = gameBoard[finalI][finalJ];
+                                    if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
+                                        highlightMove(tile, Color.LIGHTPINK); //Highlights tile
+                                    else
+                                        highlightMove(tile, Color.LIGHTGREEN);
+                                    sourceY.set(finalI);
+                                    sourceX.set(finalJ);
+                                    this.sRow = sourceY.get();
+                                    this.sCol = sourceX.get();
+                                }
+                                else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                    finalSelect1[0] = null;
+                                    this.sCol = -1;
+                                    this.sRow = -1;
                                     deselectMove(tile, Color.WHITE);
-                            }
-                            else if(finalSelect1[0] != null && finalSelect2[0] == null){
-                                finalSelect2[0] = gameBoard[finalI][finalJ];
-                                highlightMove(tile);
-                                destinationY.set(finalI);
-                                destinationX.set(finalJ);
-                                this.dRow = destinationY.get();
-                                this.dCol = destinationX.get();
-                                //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                }
+                            }else{
+                                if (finalSelect1[0] == null &&(finalSelect2[0] == gameBoard[finalI][finalJ])){
+                                    this.dCol = -1;
+                                    this.dRow = -1;
+                                    finalSelect2[0] = null;
+                                    if (colour.isRed())
+                                        deselectMove(tile, Color.RED);
+                                    else if(colour.isGreen())
+                                        deselectMove(tile, Color.GREEN);
+                                    else
+                                        deselectMove(tile, Color.WHITE);
+                                }
+                                else if(finalSelect1[0] != null && finalSelect2[0] == null){
+                                    finalSelect2[0] = gameBoard[finalI][finalJ];
+                                    highlightMove(tile, Color.WHEAT);
+                                    destinationY.set(finalI);
+                                    destinationX.set(finalJ);
+                                    this.dRow = destinationY.get();
+                                    this.dCol = destinationX.get();
+                                    //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                }
                             }
                         });
                         selected1 = finalSelect1[0];
@@ -290,39 +313,59 @@ public class JavaFocus extends Application {
                         gameBoardGrid.add(new StackPane(tile, text), j, i);
                         if(board.getCurrentPlayer().getPlayerColour().isGreen()){
                             tile.setOnMouseClicked(event ->{
-                                if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
-                                    finalSelect1[0] = gameBoard[finalI][finalJ];
-                                    sourceY.set(finalI);
-                                    sourceX.set(finalJ);
-                                    this.sRow = sourceY.get();
-                                    this.sCol = sourceX.get();
-                                    highlightMove(tile); //Highlights tile
-                                }
-                                else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
-                                    finalSelect1[0] = null;
-                                    this.sRow = -1;
-                                    this.sCol = -1;
-                                    deselectMove(tile, Color.GREEN);
-                                }
-                                else if (finalSelect2[0] == gameBoard[finalI][finalJ]){
-                                    finalSelect2[0] = null;
-                                    this.dCol = -1;
-                                    this.dRow = -1;
-                                    if (colour.isRed())
-                                        deselectMove(tile, Color.RED);
-                                    else if(colour.isGreen())
+                                if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                                    if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
+                                        finalSelect1[0] = gameBoard[finalI][finalJ];
+                                        if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
+                                            highlightMove(tile, Color.LIGHTPINK); //Highlights tile
+                                        else
+                                            highlightMove(tile, Color.LIGHTGREEN);
+                                        sourceY.set(finalI);
+                                        sourceX.set(finalJ);
+                                        this.sRow = sourceY.get();
+                                        this.sCol = sourceX.get();
+                                    }
+                                    else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        finalSelect1[0] = null;
+                                        this.sCol = -1;
+                                        this.sRow = -1;
                                         deselectMove(tile, Color.GREEN);
-                                    else
-                                        deselectMove(tile, Color.WHITE);
-                                }
-                                else if(finalSelect2[0] == null){
-                                    finalSelect2[0] = gameBoard[finalI][finalJ];
-                                    destinationY.set(finalI);
-                                    destinationX.set(finalJ);
-                                    this.dRow = destinationY.get();
-                                    this.dCol = destinationX.get();
-                                    highlightMove(tile);
-                                    //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                    }
+                                } else{
+                                    if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
+                                        finalSelect1[0] = gameBoard[finalI][finalJ];
+                                        sourceY.set(finalI);
+                                        sourceX.set(finalJ);
+                                        this.sRow = sourceY.get();
+                                        this.sCol = sourceX.get();
+                                        highlightMove(tile, Color.YELLOW); //Highlights tile
+                                    }
+                                    else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        finalSelect1[0] = null;
+                                        this.sRow = -1;
+                                        this.sCol = -1;
+                                        deselectMove(tile, Color.GREEN);
+                                    }
+                                    else if (finalSelect2[0] == gameBoard[finalI][finalJ]){
+                                        finalSelect2[0] = null;
+                                        this.dCol = -1;
+                                        this.dRow = -1;
+                                        if (colour.isRed())
+                                            deselectMove(tile, Color.RED);
+                                        else if(colour.isGreen())
+                                            deselectMove(tile, Color.GREEN);
+                                        else
+                                            deselectMove(tile, Color.WHITE);
+                                    }
+                                    else if(finalSelect2[0] == null){
+                                        finalSelect2[0] = gameBoard[finalI][finalJ];
+                                        destinationY.set(finalI);
+                                        destinationX.set(finalJ);
+                                        this.dRow = destinationY.get();
+                                        this.dCol = destinationX.get();
+                                        highlightMove(tile, Color.WHEAT);
+                                        //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                    }
                                 }
                             });
                             selected1 = finalSelect1[0];
@@ -330,25 +373,45 @@ public class JavaFocus extends Application {
                         }
                         else{
                             tile.setOnMouseClicked(event ->{
-                                if (finalSelect2[0] == gameBoard[finalI][finalJ]){
-                                    this.dCol = -1;
-                                    this.dRow = -1;
-                                    finalSelect2[0] = null;
-                                    if (colour.isRed())
+                                if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                                    if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
+                                        finalSelect1[0] = gameBoard[finalI][finalJ];
+                                        if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
+                                            highlightMove(tile, Color.LIGHTPINK); //Highlights tile
+                                        else
+                                            highlightMove(tile, Color.LIGHTGREEN);
+                                        sourceY.set(finalI);
+                                        sourceX.set(finalJ);
+                                        this.sRow = sourceY.get();
+                                        this.sCol = sourceX.get();
+                                    }
+                                    else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        finalSelect1[0] = null;
+                                        this.sCol = -1;
+                                        this.sRow = -1;
                                         deselectMove(tile, Color.RED);
-                                    else if(colour.isGreen())
-                                        deselectMove(tile, Color.GREEN);
-                                    else
-                                        deselectMove(tile, Color.WHITE);
-                                }
-                                else if(finalSelect1[0] != null && finalSelect2[0] == null){
-                                    finalSelect2[0] = gameBoard[finalI][finalJ];
-                                    highlightMove(tile);
-                                    destinationY.set(finalI);
-                                    destinationX.set(finalJ);
-                                    this.dRow = destinationY.get();
-                                    this.dCol = destinationX.get();
-                                    //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                    }
+                                }else{
+                                    if (finalSelect2[0] == gameBoard[finalI][finalJ]){
+                                        this.dCol = -1;
+                                        this.dRow = -1;
+                                        finalSelect2[0] = null;
+                                        if (colour.isRed())
+                                            deselectMove(tile, Color.RED);
+                                        else if(colour.isGreen())
+                                            deselectMove(tile, Color.GREEN);
+                                        else
+                                            deselectMove(tile, Color.WHITE);
+                                    }
+                                    else if(finalSelect1[0] != null && finalSelect2[0] == null){
+                                        finalSelect2[0] = gameBoard[finalI][finalJ];
+                                        highlightMove(tile, Color.WHEAT);
+                                        destinationY.set(finalI);
+                                        destinationX.set(finalJ);
+                                        this.dRow = destinationY.get();
+                                        this.dCol = destinationX.get();
+                                        //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                    }
                                 }
                             });
                         }
@@ -363,65 +426,105 @@ public class JavaFocus extends Application {
                         gameBoardGrid.add(new StackPane(tile, text), j, i);
                         if (board.getCurrentPlayer().getPlayerColour().isRed()) {
                             tile.setOnMouseClicked(event ->{
-                                if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
-                                    finalSelect1[0] = gameBoard[finalI][finalJ];
-                                    highlightMove(tile); //Highlights tile
-                                    sourceY.set(finalI);
-                                    sourceX.set(finalJ);
-                                    this.sRow = sourceY.get();
-                                    this.sCol = sourceX.get();
-                                }
-                                else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
-                                    finalSelect1[0] = null;
-                                    this.sCol = -1;
-                                    this.sRow = -1;
-                                    deselectMove(tile, Color.RED);
-                                }
-                                else if (finalSelect2[0] == gameBoard[finalI][finalJ]){
-                                    this.dCol = -1;
-                                    this.dRow = -1;
-                                    finalSelect2[0] = null;
-                                    if (colour.isRed())
+                                if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                                    if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
+                                        finalSelect1[0] = gameBoard[finalI][finalJ];
+                                        if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
+                                            highlightMove(tile, Color.LIGHTPINK); //Highlights tile
+                                        else
+                                            highlightMove(tile, Color.LIGHTGREEN);
+                                        sourceY.set(finalI);
+                                        sourceX.set(finalJ);
+                                        this.sRow = sourceY.get();
+                                        this.sCol = sourceX.get();
+                                    }
+                                    else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        finalSelect1[0] = null;
+                                        this.sCol = -1;
+                                        this.sRow = -1;
                                         deselectMove(tile, Color.RED);
-                                    else if(colour.isGreen())
-                                        deselectMove(tile, Color.GREEN);
-                                    else
-                                        deselectMove(tile, Color.WHITE);
-                                }
-                                else if(finalSelect2[0] == null){
-                                    finalSelect2[0] = gameBoard[finalI][finalJ];
-                                    highlightMove(tile);
-                                    destinationY.set(finalI);
-                                    destinationX.set(finalJ);
-                                    this.dRow = destinationY.get();
-                                    this.dCol = destinationX.get();
+                                    }
+                                }else{
+                                    if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
+                                        finalSelect1[0] = gameBoard[finalI][finalJ];
+                                        highlightMove(tile, Color.YELLOW); //Highlights tile
+                                        sourceY.set(finalI);
+                                        sourceX.set(finalJ);
+                                        this.sRow = sourceY.get();
+                                        this.sCol = sourceX.get();
+                                    }
+                                    else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        finalSelect1[0] = null;
+                                        this.sCol = -1;
+                                        this.sRow = -1;
+                                        deselectMove(tile, Color.RED);
+                                    }
+                                    else if (finalSelect2[0] == gameBoard[finalI][finalJ]){
+                                        this.dCol = -1;
+                                        this.dRow = -1;
+                                        finalSelect2[0] = null;
+                                        if (colour.isRed())
+                                            deselectMove(tile, Color.RED);
+                                        else if(colour.isGreen())
+                                            deselectMove(tile, Color.GREEN);
+                                        else
+                                            deselectMove(tile, Color.WHITE);
+                                    }
+                                    else if(finalSelect2[0] == null){
+                                        finalSelect2[0] = gameBoard[finalI][finalJ];
+                                        highlightMove(tile, Color.WHEAT);
+                                        destinationY.set(finalI);
+                                        destinationX.set(finalJ);
+                                        this.dRow = destinationY.get();
+                                        this.dCol = destinationX.get();
 
-                                    //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                        //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                    }
                                 }
                             });
                             selected1 = finalSelect1[0];
                             selected2 = finalSelect2[0];
                         } else {
                             tile.setOnMouseClicked(event -> {
-                                if (finalSelect2[0] == gameBoard[finalI][finalJ]) {
-                                    this.dCol = -1;
-                                    this.dRow = -1;
-                                    finalSelect2[0] = null;
-                                    if (colour.isRed())
-                                        deselectMove(tile, Color.RED);
-                                    else if (colour.isGreen())
+                                if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                                    if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
+                                        finalSelect1[0] = gameBoard[finalI][finalJ];
+                                        if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
+                                            highlightMove(tile, Color.LIGHTPINK); //Highlights tile
+                                        else
+                                            highlightMove(tile, Color.LIGHTGREEN);
+                                        sourceY.set(finalI);
+                                        sourceX.set(finalJ);
+                                        this.sRow = sourceY.get();
+                                        this.sCol = sourceX.get();
+                                    }
+                                    else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        finalSelect1[0] = null;
+                                        this.sCol = -1;
+                                        this.sRow = -1;
                                         deselectMove(tile, Color.GREEN);
-                                    else
-                                        deselectMove(tile, Color.WHITE);
-                                } else if (finalSelect1[0] != null && finalSelect2[0] == null) {
-                                    finalSelect2[0] = gameBoard[finalI][finalJ];
-                                    highlightMove(tile);
-                                    destinationY.set(finalI);
-                                    destinationX.set(finalJ);
-                                    this.dRow = destinationY.get();
-                                    this.dCol = destinationX.get();
+                                    }
+                                }else{
+                                    if (finalSelect2[0] == gameBoard[finalI][finalJ]) {
+                                        this.dCol = -1;
+                                        this.dRow = -1;
+                                        finalSelect2[0] = null;
+                                        if (colour.isRed())
+                                            deselectMove(tile, Color.RED);
+                                        else if (colour.isGreen())
+                                            deselectMove(tile, Color.GREEN);
+                                        else
+                                            deselectMove(tile, Color.WHITE);
+                                    } else if (finalSelect1[0] != null && finalSelect2[0] == null) {
+                                        finalSelect2[0] = gameBoard[finalI][finalJ];
+                                        highlightMove(tile, Color.WHEAT);
+                                        destinationY.set(finalI);
+                                        destinationX.set(finalJ);
+                                        this.dRow = destinationY.get();
+                                        this.dCol = destinationX.get();
 
-                                    //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                        //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
+                                    }
                                 }
                             });
                         }
@@ -438,8 +541,8 @@ public class JavaFocus extends Application {
         text.setText(Integer.toString(board[row][col].getStack().numberOfPieces()));
         text.setFill(Color.BLACK);
     }
-    private static void highlightMove(Rectangle tile){
-        tile.setFill(Color.YELLOW);
+    private static void highlightMove(Rectangle tile, Color color){
+        tile.setFill(color);
     }
     private static void deselectMove(Rectangle tile, Color color){
         tile.setFill(color);

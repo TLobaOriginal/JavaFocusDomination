@@ -2,6 +2,8 @@ package engine.board;
 
 import engine.Colour;
 import engine.Player;
+import engine.pieces.Piece;
+import engine.pieces.PieceStack;
 import engine.square.Square;
 
 public class Board {
@@ -69,6 +71,14 @@ public class Board {
             }
             System.out.println("");
         }
+    }
+
+    public void makeMove(int sRow, int sCol) {
+        PieceStack newStack = new PieceStack();
+        newStack.push(new Piece(currentPlayer.getPlayerColour()));
+        opponent.setNumPieces(opponent.getNumPieces() - board[sRow][sCol].getStack().mergeStack(newStack, currentPlayer));
+        currentPlayer.useReinforcement();
+        changePlayer();
     }
 }
 
