@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class JavaFocus extends Application {
    private Board board;
     //This will be used to see whether a move can be submitted
-    private int sourceRow = 0, sourceCol = 0, destinationRow = 0, destinationCol = 0;
+    private int sCol = 0, sRow = 0, dCol = 0, dRow = 0;
 
     public static void main(String[] args) {
         launch(args);
@@ -121,6 +121,13 @@ public class JavaFocus extends Application {
         p2Captured = new Text(Integer.toString(board.getPlayer2().getNumPiecesCaptured()));
         p2Captured.setFont(new Font(30));
 
+        Text p1Reinforcement = new Text(Integer.toString(board.getPlayer1().getNumReinforcementPieces()));
+        p1Reinforcement.setFont(new Font(30));
+
+        Text p2Reinforcement = new Text(Integer.toString(board.getPlayer2().getNumReinforcementPieces()));
+        p2Reinforcement.setFont(new Font(30));
+
+
         Text p1NameText = new Text("Player 1 Name: ");
         p1NameText.setFont(new Font(30));
         Text p1TotalText = new Text("Total pieces: ");
@@ -129,6 +136,8 @@ public class JavaFocus extends Application {
         p1CapturedText.setFont(new Font(30));
         Text p1ColourText = new Text("Colour: ");
         p1ColourText.setFont(new Font(30));
+        Text p1ReinforcementText = new Text("Reinforcements: ");
+        p1ReinforcementText.setFont(new Font(30));
 
         Text p2NameText = new Text("Player 2 Name: ");
         p2NameText.setFont(new Font(30));
@@ -138,22 +147,24 @@ public class JavaFocus extends Application {
         p2CapturedText.setFont(new Font(30));
         Text p2ColourText = new Text("Colour: ");
         p2ColourText.setFont(new Font(30));
+        Text p2ReinforcementText = new Text("Reinforcements: ");
+        p2ReinforcementText.setFont(new Font(30));
 
-        VBox p1InfoBox = new VBox(p1Name, p1Total, p1Captured, p1Colour);
-        VBox p1InfoBoxText = new VBox(p1NameText, p1TotalText, p1CapturedText, p1ColourText);
-        VBox p2InfoBox = new VBox(p2Name, p2Total, p2Captured, p2Colour);
-        VBox p2InfoBoxText = new VBox(p2NameText, p2TotalText, p2CapturedText, p2ColourText);
-
+        VBox p1InfoBox = new VBox(p1Name, p1Total, p1Captured, p1Reinforcement, p1Colour);
+        VBox p1InfoBoxText = new VBox(p1NameText, p1TotalText, p1CapturedText, p1ReinforcementText, p1ColourText);
+        VBox p2InfoBox = new VBox(p2Name, p2Total, p2Captured, p2Reinforcement, p2Colour);
+        VBox p2InfoBoxText = new VBox(p2NameText, p2TotalText, p2CapturedText, p2ReinforcementText, p2ColourText);
+        Button playMove = new Button("Submit Move");
         HBox p1Box = new HBox(p1InfoBoxText, p1InfoBox);
         HBox p2Box = new HBox(p2InfoBoxText, p2InfoBox);
-
+        HBox submitBox = new HBox(playMove);
         player1 = new Pane(p1Box);
         player1.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
         player2 = new Pane(p2Box);
         player2.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
 
-        Button playMove = new Button("Submit Move");
-        VBox gameInfoContainer = new VBox(player1, player2, playMove);
+
+        VBox gameInfoContainer = new VBox(player1, player2, submitBox);
         AtomicReference<HBox> gameLayout = new AtomicReference<>(new HBox(parent.get(), gameInfoContainer));
 
 
@@ -166,24 +177,33 @@ public class JavaFocus extends Application {
         primaryStage.show();
 
         playMove.setOnMouseClicked(event -> {
-            if(destinationCol >= 0 && destinationRow >= 0 && sourceCol >= 0 && sourceRow >= 0){
-                int steps = board.getBoard()[destinationCol][destinationRow].getStack().numberOfPieces();
-                if(distance(destinationRow, destinationCol, sourceRow, sourceCol) <= steps){
-                    board.changePlayer();
-                    board.makeMove(destinationRow, destinationCol, sourceRow, sourceCol);
+            if(dRow >= 0 && dCol >= 0 && sRow >= 0 && sCol >= 0){
+                int steps = board.getBoard()[sRow][sCol].getStack().numberOfPieces();
+                if(distance(dCol, dRow, sCol, sRow) <= steps){
+                    //board.changePlayer();
+                    board.makeMove(dCol, dRow, sCol, sRow);
                 }
                 else
-                    System.out.println("Error: Too many steps, submit a new move");
+                    System.out.println("Error: Too many steps, submit a new move\n" +
+                            "Distance: " + distance(dCol, dRow, sCol, sRow) + "\n" +
+                            "Allowed steps: " + steps);
             }
             else    //TODO soon to be changed with a textfield that will communicate with the players. We mainly want a working solution
             {
                 System.out.println("Invalid Move, submit a new move");
             }
-            this.destinationRow = - 1;
-            sourceRow = sourceCol = destinationCol = destinationRow;
+            this.dCol = - 1;
+            sCol = sRow = dRow = dCol;
+
+            p1Total.setText(Integer.toString(board.getPlayer1().getNumPieces()));
+            p1Captured.setText(Integer.toString(board.getPlayer1().getNumPiecesCaptured()));
+            p1Reinforcement.setText(Integer.toString(board.getPlayer1().getNumReinforcementPieces()));
+            p2Total.setText(Integer.toString(board.getPlayer2().getNumPieces()));
+            p2Captured.setText(Integer.toString(board.getPlayer2().getNumPiecesCaptured()));
+            p2Reinforcement.setText(Integer.toString(board.getPlayer2().getNumReinforcementPieces()));
 
             parent.set(createBoard(board));
-            gameLayout.set(new HBox(parent.get(), gameInfoContainer, playMove));
+            gameLayout.set(new HBox(parent.get(), gameInfoContainer, submitBox));
             layout.set(new StackPane(gameLayout.get()));
             gamePlay.set(new Scene(layout.get(), 1100, 500));
             primaryStage.setScene(gamePlay.get());
@@ -238,8 +258,8 @@ public class JavaFocus extends Application {
 
                         tile.setOnMouseClicked(event ->{
                             if (finalSelect2[0] == gameBoard[finalI][finalJ]){
-                                this.destinationRow = -1;
-                                this.destinationCol = -1;
+                                this.dCol = -1;
+                                this.dRow = -1;
                                 finalSelect2[0] = null;
                                 if (colour.isRed())
                                     deselectMove(tile, Color.RED);
@@ -253,8 +273,8 @@ public class JavaFocus extends Application {
                                 highlightMove(tile);
                                 destinationY.set(finalI);
                                 destinationX.set(finalJ);
-                                this.destinationRow = destinationY.get();
-                                this.destinationCol = destinationX.get();
+                                this.dRow = destinationY.get();
+                                this.dCol = destinationX.get();
                                 //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                             }
                         });
@@ -274,20 +294,20 @@ public class JavaFocus extends Application {
                                     finalSelect1[0] = gameBoard[finalI][finalJ];
                                     sourceY.set(finalI);
                                     sourceX.set(finalJ);
-                                    this.sourceCol = sourceY.get();
-                                    this.sourceRow = sourceX.get();
+                                    this.sRow = sourceY.get();
+                                    this.sCol = sourceX.get();
                                     highlightMove(tile); //Highlights tile
                                 }
                                 else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
                                     finalSelect1[0] = null;
-                                    this.sourceCol = -1;
-                                    this.sourceRow = -1;
+                                    this.sRow = -1;
+                                    this.sCol = -1;
                                     deselectMove(tile, Color.GREEN);
                                 }
                                 else if (finalSelect2[0] == gameBoard[finalI][finalJ]){
                                     finalSelect2[0] = null;
-                                    this.destinationRow = -1;
-                                    this.destinationCol = -1;
+                                    this.dCol = -1;
+                                    this.dRow = -1;
                                     if (colour.isRed())
                                         deselectMove(tile, Color.RED);
                                     else if(colour.isGreen())
@@ -299,8 +319,8 @@ public class JavaFocus extends Application {
                                     finalSelect2[0] = gameBoard[finalI][finalJ];
                                     destinationY.set(finalI);
                                     destinationX.set(finalJ);
-                                    this.destinationCol = destinationY.get();
-                                    this.destinationRow = destinationX.get();
+                                    this.dRow = destinationY.get();
+                                    this.dCol = destinationX.get();
                                     highlightMove(tile);
                                     //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                                 }
@@ -311,8 +331,8 @@ public class JavaFocus extends Application {
                         else{
                             tile.setOnMouseClicked(event ->{
                                 if (finalSelect2[0] == gameBoard[finalI][finalJ]){
-                                    this.destinationRow = -1;
-                                    this.destinationCol = -1;
+                                    this.dCol = -1;
+                                    this.dRow = -1;
                                     finalSelect2[0] = null;
                                     if (colour.isRed())
                                         deselectMove(tile, Color.RED);
@@ -326,8 +346,8 @@ public class JavaFocus extends Application {
                                     highlightMove(tile);
                                     destinationY.set(finalI);
                                     destinationX.set(finalJ);
-                                    this.destinationCol = destinationY.get();
-                                    this.destinationRow = destinationX.get();
+                                    this.dRow = destinationY.get();
+                                    this.dCol = destinationX.get();
                                     //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                                 }
                             });
@@ -348,18 +368,18 @@ public class JavaFocus extends Application {
                                     highlightMove(tile); //Highlights tile
                                     sourceY.set(finalI);
                                     sourceX.set(finalJ);
-                                    this.sourceCol = sourceY.get();
-                                    this.sourceRow = sourceX.get();
+                                    this.sRow = sourceY.get();
+                                    this.sCol = sourceX.get();
                                 }
                                 else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
                                     finalSelect1[0] = null;
-                                    this.sourceRow = -1;
-                                    this.sourceCol = -1;
+                                    this.sCol = -1;
+                                    this.sRow = -1;
                                     deselectMove(tile, Color.RED);
                                 }
                                 else if (finalSelect2[0] == gameBoard[finalI][finalJ]){
-                                    this.destinationRow = -1;
-                                    this.destinationCol = -1;
+                                    this.dCol = -1;
+                                    this.dRow = -1;
                                     finalSelect2[0] = null;
                                     if (colour.isRed())
                                         deselectMove(tile, Color.RED);
@@ -373,8 +393,8 @@ public class JavaFocus extends Application {
                                     highlightMove(tile);
                                     destinationY.set(finalI);
                                     destinationX.set(finalJ);
-                                    this.destinationCol = destinationY.get();
-                                    this.destinationRow = destinationX.get();
+                                    this.dRow = destinationY.get();
+                                    this.dCol = destinationX.get();
 
                                     //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                                 }
@@ -384,8 +404,8 @@ public class JavaFocus extends Application {
                         } else {
                             tile.setOnMouseClicked(event -> {
                                 if (finalSelect2[0] == gameBoard[finalI][finalJ]) {
-                                    this.destinationRow = -1;
-                                    this.destinationCol = -1;
+                                    this.dCol = -1;
+                                    this.dRow = -1;
                                     finalSelect2[0] = null;
                                     if (colour.isRed())
                                         deselectMove(tile, Color.RED);
@@ -398,8 +418,8 @@ public class JavaFocus extends Application {
                                     highlightMove(tile);
                                     destinationY.set(finalI);
                                     destinationX.set(finalJ);
-                                    this.destinationCol = destinationY.get();
-                                    this.destinationRow = destinationX.get();
+                                    this.dRow = destinationY.get();
+                                    this.dCol = destinationX.get();
 
                                     //board.makeMove(destinationX.get(), destinationY.get(), sourceX.get(), sourceY.get());
                                 }

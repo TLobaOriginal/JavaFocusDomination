@@ -4,7 +4,7 @@ public class Square {
     private SquareType squareType;
     int row;
     int column;
-    PieceStack stack;
+    private PieceStack stack;
     //TODO Add a stack which will represent a stack of pieces
 
     public Square(SquareType squareType, int row, int column){

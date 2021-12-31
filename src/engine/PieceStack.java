@@ -1,13 +1,15 @@
 package engine;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Stack;
 public class PieceStack {
-
-    private Stack<Piece> stack;
+    /*We can implement the Piece stack as a LinkedList*/
+    //private Stack<Piece> stack;
+    LinkedList<Piece> stack; //TODO turn to private when needed
     private Colour topColour;
 
     PieceStack(){
-        stack = new Stack<>();
+        stack = new LinkedList<>();
         topColour = Colour.NONE;
     }
 
@@ -19,13 +21,14 @@ public class PieceStack {
         this.topColour = topColour;
     }
 
-    /*public Stack<Piece> getStack() {
-        return stack;
-    }*/
 
-    public void push(Piece piece){stack.push(piece);}
+    public void push(Piece piece){
+        stack.addFirst(piece);
+    }
 
-    public Piece pop(){return stack.pop();}
+    public Piece pop(){
+        return stack.removeLast();
+    }
 
     public int numberOfPieces(){
         return stack.size();
@@ -36,35 +39,20 @@ public class PieceStack {
         return stack.isEmpty();
     }
 
-    public void prettyPrint(){
-        while(!stack.isEmpty()){
-            System.out.println(stack.pop().getColour().toString() + " - ");
-        }
-    }
+    //public int size(){return stack.size();}
 
     //TODO fix bug of moving to empty square with stack that contains opponents piece
     //TODO sometimes the wrong top colour is initialised whenever we move a stack to a square that has an existing stack
-    public void mergeStack(PieceStack incomingStack){
-        /*if(stack.isEmpty())
-        {
-            topColour = incomingStack.getTopColour();
-            while(!incomingStack.isEmpty()){
-                stack.push(incomingStack.pop());
+    public int mergeStack(PieceStack incomingStack, Player currentPlayer){
+        int numCaptured = 0;
+        while(!incomingStack.isEmpty()) {
+            stack.addFirst(incomingStack.pop());
+            if (stack.size() > 5) {
+                numCaptured = currentPlayer.processPiece(stack.removeLast());
             }
-            incomingStack.reverseStack();
         }
-        else{
-            reverseStack();
-            while(!incomingStack.isEmpty())
-                stack.push(incomingStack.pop());
-            topColour = stack.peek().getColour();
-        }*/
-        ArrayList<Piece> incomingStackPieces = new ArrayList<>();
-        while(!incomingStack.isEmpty())
-            incomingStackPieces.add(incomingStack.pop());
-        for(int i = incomingStackPieces.size() - 1; i >= 0; i--)
-            stack.push(incomingStackPieces.remove(i));
-        topColour = stack.peek().getColour();
+        topColour = stack.getFirst().getColour();
+        return numCaptured;
     }
 
 }
