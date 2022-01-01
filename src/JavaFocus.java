@@ -25,6 +25,7 @@ public class JavaFocus extends Application {
    private Board board;
     //This will be used to see whether a move can be submitted
     private int sCol = 0, sRow = 0, dCol = 0, dRow = 0;
+    private boolean reservePossible = false;
 
     public static void main(String[] args) {
         launch(args);
@@ -154,19 +155,23 @@ public class JavaFocus extends Application {
         VBox p1InfoBoxText = new VBox(p1NameText, p1TotalText, p1CapturedText, p1ReinforcementText, p1ColourText);
         VBox p2InfoBox = new VBox(p2Name, p2Total, p2Captured, p2Reinforcement, p2Colour);
         VBox p2InfoBoxText = new VBox(p2NameText, p2TotalText, p2CapturedText, p2ReinforcementText, p2ColourText);
+
         Button playMove = new Button("Submit Move");
+        playMove.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+        Button reserveMove = new Button("Place Reserve");
+        reserveMove.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+
         HBox p1Box = new HBox(p1InfoBoxText, p1InfoBox);
         HBox p2Box = new HBox(p2InfoBoxText, p2InfoBox);
-        HBox submitBox = new HBox(playMove);
+
         player1 = new Pane(p1Box);
         player1.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+
         player2 = new Pane(p2Box);
         player2.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
 
-
-        VBox gameInfoContainer = new VBox(player1, player2, submitBox);
+        VBox gameInfoContainer = new VBox(player1, player2, playMove, reserveMove);
         AtomicReference<HBox> gameLayout = new AtomicReference<>(new HBox(parent.get(), gameInfoContainer));
-
 
 
         AtomicReference<StackPane> layout = new AtomicReference<>(new StackPane());
@@ -182,6 +187,7 @@ public class JavaFocus extends Application {
                 if(distance(dCol, dRow, sCol, sRow) <= steps){
                     //board.changePlayer();
                     board.makeMove(dCol, dRow, sCol, sRow);
+                    reservePossible = false;
                 }
                 else
                     System.out.println("Error: Too many steps, submit a new move\n" +
@@ -190,6 +196,7 @@ public class JavaFocus extends Application {
             }
             else if(((sRow >= 0 && sCol >= 0) && board.getCurrentPlayer().getNumReinforcementPieces() > 0)){
                 board.makeMove(sRow, sCol);
+                reservePossible = false;
             }
             else    //TODO soon to be changed with a textfield that will communicate with the players. We mainly want a working solution
             {
@@ -197,6 +204,26 @@ public class JavaFocus extends Application {
             }
             this.dCol = - 1;
             sCol = sRow = dRow = dCol;
+
+            //CHANGE COLOUR OF RESERVE BUTTON
+            Player currentPlayer = board.getCurrentPlayer();
+            if(currentPlayer.getPlayerColour().isGreen()){
+                if(currentPlayer.getNumReinforcementPieces() > 0)
+                    reserveMove.setBorder(new Border(new BorderStroke(Color.GREEN, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+                else
+                    reserveMove.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+            } else {
+                if(currentPlayer.getPlayerColour().isRed())
+                    if(currentPlayer.getNumReinforcementPieces() > 0)
+                        reserveMove.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+                    else
+                        reserveMove.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+            }
+
+            if(currentPlayer.getPlayerColour().isGreen())
+                playMove.setBorder(new Border(new BorderStroke(Color.GREEN, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+            else
+                playMove.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
 
             p1Total.setText(Integer.toString(board.getPlayer1().getNumPieces()));
             p1Captured.setText(Integer.toString(board.getPlayer1().getNumPiecesCaptured()));
@@ -206,7 +233,7 @@ public class JavaFocus extends Application {
             p2Reinforcement.setText(Integer.toString(board.getPlayer2().getNumReinforcementPieces()));
 
             parent.set(createBoard(board));
-            gameLayout.set(new HBox(parent.get(), gameInfoContainer, submitBox));
+            gameLayout.set(new HBox(parent.get(), gameInfoContainer, playMove, reserveMove));
             layout.set(new StackPane(gameLayout.get()));
             gamePlay.set(new Scene(layout.get(), 1100, 500));
             primaryStage.setScene(gamePlay.get());
@@ -215,12 +242,33 @@ public class JavaFocus extends Application {
             //board.prettyPrint();
         });
 
+        reserveMove.setOnMouseClicked(event -> {
+            reservePossible = !reservePossible; //Switch the mode
+
+            Player currentPlayer = board.getCurrentPlayer();
+            if(currentPlayer.getNumReinforcementPieces() > 0){
+                if(reservePossible){
+                    if(currentPlayer.getPlayerColour().isGreen())
+                        reserveMove.setBorder(new Border(new BorderStroke(Color.LIGHTGREEN, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+                    else
+                        reserveMove.setBorder(new Border(new BorderStroke(Color.LIGHTPINK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+                }
+                else{
+                    if(currentPlayer.getPlayerColour().isGreen())
+                        reserveMove.setBorder(new Border(new BorderStroke(Color.GREEN, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+                    else
+                        reserveMove.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderWidths.DEFAULT)));
+                }
+            }
+        });
     }
 
     private int distance(int destinationRow, int destinationCol, int sourceRow, int sourceCol){
         return Math.abs(destinationRow - sourceRow) + Math.abs(destinationCol - sourceCol);
     }
 
+
+    //TODO FIX GUI DISPLAY OF REINFORCEMENT
 
     public Parent createBoard(Board board){
         GridPane gameBoardGrid = new GridPane();
@@ -260,7 +308,7 @@ public class JavaFocus extends Application {
                         gameBoardGrid.add(new StackPane(tile, text), j, i);
 
                         tile.setOnMouseClicked(event ->{
-                            if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                            if(reservePossible){
                                 if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
                                     finalSelect1[0] = gameBoard[finalI][finalJ];
                                     if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
@@ -279,7 +327,7 @@ public class JavaFocus extends Application {
                                     deselectMove(tile, Color.WHITE);
                                 }
                             }else{
-                                if (finalSelect1[0] == null &&(finalSelect2[0] == gameBoard[finalI][finalJ])){
+                                if (finalSelect2[0] == gameBoard[finalI][finalJ]){
                                     this.dCol = -1;
                                     this.dRow = -1;
                                     finalSelect2[0] = null;
@@ -313,7 +361,7 @@ public class JavaFocus extends Application {
                         gameBoardGrid.add(new StackPane(tile, text), j, i);
                         if(board.getCurrentPlayer().getPlayerColour().isGreen()){
                             tile.setOnMouseClicked(event ->{
-                                if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                                if(reservePossible){
                                     if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
                                         finalSelect1[0] = gameBoard[finalI][finalJ];
                                         if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
@@ -326,10 +374,14 @@ public class JavaFocus extends Application {
                                         this.sCol = sourceX.get();
                                     }
                                     else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        if(finalSelect1[0].getSquareColour().isGreen())
+                                            deselectMove(tile, Color.GREEN);
+                                        else
+                                            deselectMove(tile, Color.RED);
                                         finalSelect1[0] = null;
                                         this.sCol = -1;
                                         this.sRow = -1;
-                                        deselectMove(tile, Color.GREEN);
+
                                     }
                                 } else{
                                     if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
@@ -373,7 +425,7 @@ public class JavaFocus extends Application {
                         }
                         else{
                             tile.setOnMouseClicked(event ->{
-                                if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                                if(reservePossible){
                                     if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
                                         finalSelect1[0] = gameBoard[finalI][finalJ];
                                         if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
@@ -386,10 +438,13 @@ public class JavaFocus extends Application {
                                         this.sCol = sourceX.get();
                                     }
                                     else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        if(finalSelect1[0].getSquareColour().isGreen())
+                                            deselectMove(tile, Color.GREEN);
+                                        else
+                                            deselectMove(tile, Color.RED);
                                         finalSelect1[0] = null;
                                         this.sCol = -1;
                                         this.sRow = -1;
-                                        deselectMove(tile, Color.RED);
                                     }
                                 }else{
                                     if (finalSelect2[0] == gameBoard[finalI][finalJ]){
@@ -426,7 +481,7 @@ public class JavaFocus extends Application {
                         gameBoardGrid.add(new StackPane(tile, text), j, i);
                         if (board.getCurrentPlayer().getPlayerColour().isRed()) {
                             tile.setOnMouseClicked(event ->{
-                                if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                                if(reservePossible){
                                     if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
                                         finalSelect1[0] = gameBoard[finalI][finalJ];
                                         if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
@@ -439,10 +494,13 @@ public class JavaFocus extends Application {
                                         this.sCol = sourceX.get();
                                     }
                                     else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        if(finalSelect1[0].getSquareColour().isGreen())
+                                            deselectMove(tile, Color.GREEN);
+                                        else
+                                            deselectMove(tile, Color.RED);
                                         finalSelect1[0] = null;
                                         this.sCol = -1;
                                         this.sRow = -1;
-                                        deselectMove(tile, Color.RED);
                                     }
                                 }else{
                                     if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
@@ -486,7 +544,7 @@ public class JavaFocus extends Application {
                             selected2 = finalSelect2[0];
                         } else {
                             tile.setOnMouseClicked(event -> {
-                                if(board.getCurrentPlayer().getNumReinforcementPieces() > 0){
+                                if(reservePossible){
                                     if(finalSelect1[0] == null){ //If nothing is selected then we make our first selection
                                         finalSelect1[0] = gameBoard[finalI][finalJ];
                                         if(board.getCurrentPlayer().getPlayerColour() == Colour.RED)
@@ -499,10 +557,13 @@ public class JavaFocus extends Application {
                                         this.sCol = sourceX.get();
                                     }
                                     else if (finalSelect1[0] == gameBoard[finalI][finalJ]){//If we want to deselect
+                                        if(finalSelect1[0].getSquareColour().isGreen())
+                                            deselectMove(tile, Color.GREEN);
+                                        else
+                                            deselectMove(tile, Color.RED);
                                         finalSelect1[0] = null;
                                         this.sCol = -1;
                                         this.sRow = -1;
-                                        deselectMove(tile, Color.GREEN);
                                     }
                                 }else{
                                     if (finalSelect2[0] == gameBoard[finalI][finalJ]) {

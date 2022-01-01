@@ -50,7 +50,7 @@ public class PieceStack {
         while(!incomingStack.isEmpty()) {
             stack.addFirst(incomingStack.pop());
             if (stack.size() > 5) {
-                numCaptured = currentPlayer.processPiece(stack.removeLast());
+                numCaptured += currentPlayer.processPiece(stack.removeLast());
             }
         }
         topColour = stack.getFirst().getColour();
