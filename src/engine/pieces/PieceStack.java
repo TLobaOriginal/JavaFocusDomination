@@ -8,20 +8,23 @@ public class PieceStack {
     /*We can implement the Piece stack as a LinkedList*/
     //private Stack<Piece> stack;
     LinkedList<Piece> stack; //TODO turn to private when needed
-    private Colour topColour;
+    //private Colour topColour;
 
     public PieceStack(){
         stack = new LinkedList<>();
-        topColour = Colour.NONE;
+        //topColour = Colour.NONE;
     }
 
     public Colour getTopColour() {
-        return topColour;
+        if(!stack.isEmpty())
+            return stack.getFirst().getColour();
+        else
+            return Colour.NONE;
     }
 
-    public void setTopColour(Colour topColour) {
+    /*public void setTopColour(Colour topColour) {
         this.topColour = topColour;
-    }
+    }*/
 
 
     public void push(Piece piece){
@@ -37,7 +40,7 @@ public class PieceStack {
     }
 
     public boolean isEmpty(){
-        topColour = Colour.NONE;
+        //topColour = Colour.NONE;
         return stack.isEmpty();
     }
 
@@ -53,7 +56,7 @@ public class PieceStack {
                 numCaptured += currentPlayer.processPiece(stack.removeLast());
             }
         }
-        topColour = stack.getFirst().getColour();
+        //topColour = stack.getFirst().getColour();
         return numCaptured;
     }
 

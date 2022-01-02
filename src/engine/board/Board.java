@@ -43,16 +43,42 @@ public class Board {
         return currentPlayer;
     }
 
+    public Player getOpponent() {
+        return opponent;
+    }
+
     public Square[][] getBoard() {
         return board;
     }
 
-    public void makeMove(int destinationX, int destinationY, int sourceX, int sourceY){
+    public boolean makeMove(int destinationX, int destinationY, int sourceX, int sourceY){
         Square sourceSquare = board[sourceY][sourceX];
         Square destinationSquare = board[destinationY][destinationX];
 
         opponent.setNumPieces(opponent.getNumPieces() - destinationSquare.getStack().mergeStack(sourceSquare.getStack(), currentPlayer));
+        boolean won = winCheck();
+        if(won)
+            System.out.println("Winner is found");
+        else
+            System.out.println("Winner not found");
         changePlayer();
+        return won;
+    }
+
+    private boolean winCheck() {
+        Colour opponentColour = opponent.getPlayerColour();
+        if(opponent.getNumReinforcementPieces() > 0)
+            return false;
+
+        for(Square[] row: board){
+            for(Square square: row){
+                if(square.getSquareColour() == opponentColour){
+                    return false;
+                }
+            }
+        }
+        System.out.println(currentPlayer.getName() + " HAS WON THE GAME!!!");
+        return true;
     }
 
     public void prettyPrint(){
@@ -73,12 +99,14 @@ public class Board {
         }
     }
 
-    public void makeMove(int sRow, int sCol) {
+    public boolean makeMove(int sRow, int sCol) {
         PieceStack newStack = new PieceStack();
         newStack.push(new Piece(currentPlayer.getPlayerColour()));
         opponent.setNumPieces(opponent.getNumPieces() - board[sRow][sCol].getStack().mergeStack(newStack, currentPlayer));
         currentPlayer.useReinforcement();
+        boolean won = winCheck();
         changePlayer();
+        return won;
     }
 }
 

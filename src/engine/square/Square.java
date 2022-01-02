@@ -24,9 +24,9 @@ public class Square {
         return stack.getTopColour();
     }
 
-    public void setSquareColour(Colour colour){
+    /*public void setSquareColour(Colour colour){
         stack.setTopColour(colour);
-    }
+    }*/
 
     public SquareType getSquareType() {
         return squareType;

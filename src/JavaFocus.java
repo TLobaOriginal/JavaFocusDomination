@@ -131,6 +131,7 @@ public class JavaFocus extends Application {
 
         Text p1NameText = new Text("Player 1 Name: ");
         p1NameText.setFont(new Font(30));
+        p1NameText.setFill(Color.RED);
         Text p1TotalText = new Text("Total pieces: ");
         p1TotalText.setFont(new Font(30));
         Text p1CapturedText = new Text("Total captured: ");
@@ -142,6 +143,7 @@ public class JavaFocus extends Application {
 
         Text p2NameText = new Text("Player 2 Name: ");
         p2NameText.setFont(new Font(30));
+        p2NameText.setFill(Color.GREEN);
         Text p2TotalText = new Text("Total pieces: ");
         p2TotalText.setFont(new Font(30));
         Text p2CapturedText = new Text("Total captured: ");
@@ -182,11 +184,12 @@ public class JavaFocus extends Application {
         primaryStage.show();
 
         playMove.setOnMouseClicked(event -> {
+            boolean hasWon = false;
             if(dRow >= 0 && dCol >= 0 && sRow >= 0 && sCol >= 0){
                 int steps = board.getBoard()[sRow][sCol].getStack().numberOfPieces();
                 if(distance(dCol, dRow, sCol, sRow) <= steps){
                     //board.changePlayer();
-                    board.makeMove(dCol, dRow, sCol, sRow);
+                    hasWon = board.makeMove(dCol, dRow, sCol, sRow);
                     reservePossible = false;
                 }
                 else
@@ -195,7 +198,7 @@ public class JavaFocus extends Application {
                             "Allowed steps: " + steps);
             }
             else if(((sRow >= 0 && sCol >= 0) && board.getCurrentPlayer().getNumReinforcementPieces() > 0)){
-                board.makeMove(sRow, sCol);
+                hasWon = board.makeMove(sRow, sCol);
                 reservePossible = false;
             }
             else    //TODO soon to be changed with a textfield that will communicate with the players. We mainly want a working solution
@@ -204,6 +207,12 @@ public class JavaFocus extends Application {
             }
             this.dCol = - 1;
             sCol = sRow = dRow = dCol;
+
+            if(hasWon){
+                Player winner = board.getOpponent();
+                System.out.println(winner.getName() + " HAS WON THE GAME!");
+                winningScene(primaryStage,winner);
+            }
 
             //CHANGE COLOUR OF RESERVE BUTTON
             Player currentPlayer = board.getCurrentPlayer();
@@ -233,7 +242,7 @@ public class JavaFocus extends Application {
             p2Reinforcement.setText(Integer.toString(board.getPlayer2().getNumReinforcementPieces()));
 
             parent.set(createBoard(board));
-            gameLayout.set(new HBox(parent.get(), gameInfoContainer, playMove, reserveMove));
+            gameLayout.set(new HBox(parent.get(), gameInfoContainer));
             layout.set(new StackPane(gameLayout.get()));
             gamePlay.set(new Scene(layout.get(), 1100, 500));
             primaryStage.setScene(gamePlay.get());
@@ -265,6 +274,19 @@ public class JavaFocus extends Application {
 
     private int distance(int destinationRow, int destinationCol, int sourceRow, int sourceCol){
         return Math.abs(destinationRow - sourceRow) + Math.abs(destinationCol - sourceCol);
+    }
+
+    private void winningScene(Stage primaryStage, Player winner){
+        Text winnerText = new Text(winner.getName() + " has won!!!");
+        winnerText.setFont(new Font(70));
+        if (winner.getPlayerColour().isGreen())
+            winnerText.setFill(Color.GREEN);
+        else
+            winnerText.setFill(Color.RED);
+
+        Pane pane = new Pane(winnerText);
+
+        Scene winnerScene = new Scene(pane);
     }
 
 

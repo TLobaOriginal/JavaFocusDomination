@@ -15,20 +15,20 @@ public class BoardUtils {
             for(int j = 0; j < board[i].length; j++){
                 board[i][j] = new Square(SquareType.INVALID, i, j);
                 /*Now we should do the if statements to check and see if the current square is VALID or INVALID*/
-                if(isInvalidCase(i, j)){
+                if(!isInvalidCase(i, j))/*{
                     board[i][j].setSquareColour(Colour.NONE);
                 }
-                else{
+                else*/{
                     board[i][j].setSquareType(SquareType.VALID);
-                    if(isEmptyCase(i, j)){
+                    /*if(isEmptyCase(i, j)){
                         board[i][j].setSquareColour(Colour.NONE);
                     }
-                    else if(isRedCase(i, j)){
-                        board[i][j].setSquareColour(Colour.RED);
+                    else */if(isRedCase(i, j)){
+                        //board[i][j].setSquareColour(Colour.RED);
                         board[i][j].getStack().push(new Piece(Colour.RED));
                     }
                     else if(isGreenCase(i , j)){
-                        board[i][j].setSquareColour(Colour.GREEN);
+                        //board[i][j].setSquareColour(Colour.GREEN);
                         board[i][j].getStack().push(new Piece(Colour.GREEN));
                     }
                 }
