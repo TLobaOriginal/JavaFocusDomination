@@ -11,6 +11,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.scene.control.Button;
 import javafx.event.ActionEvent;
@@ -84,6 +85,7 @@ public class JavaFocus extends Application {
         });
 
         Scene NamingScene = new Scene(playerName, 800, 500);
+
         primaryStage.setScene(NamingScene);
         this.board = new Board(player1, player2);
         primaryStage.show();
@@ -212,6 +214,7 @@ public class JavaFocus extends Application {
                 Player winner = board.getOpponent();
                 System.out.println(winner.getName() + " HAS WON THE GAME!");
                 winningScene(primaryStage,winner);
+                return;
             }
 
             //CHANGE COLOUR OF RESERVE BUTTON
@@ -278,15 +281,44 @@ public class JavaFocus extends Application {
 
     private void winningScene(Stage primaryStage, Player winner){
         Text winnerText = new Text(winner.getName() + " has won!!!");
-        winnerText.setFont(new Font(70));
+        Button playAgainButton = new Button("Play Again");
+        playAgainButton.setPrefSize(200, 50);
+        playAgainButton.setFont(new Font(20));
+
+        Button quit = new Button("Quit");
+        quit.setPrefSize(200, 50);
+        quit.setFont(new Font(20));
+
+        winnerText.setFont(new Font(50));
+        winnerText.textAlignmentProperty().setValue(TextAlignment.CENTER);
         if (winner.getPlayerColour().isGreen())
             winnerText.setFill(Color.GREEN);
         else
             winnerText.setFill(Color.RED);
 
-        Pane pane = new Pane(winnerText);
+        HBox line = new HBox(winnerText);
+        line.alignmentProperty().setValue(Pos.CENTER);
+        HBox playAgainLine = new HBox(playAgainButton);
+        playAgainLine.alignmentProperty().setValue(Pos.CENTER);
+        HBox quitLine = new HBox(quit);
+        quitLine.alignmentProperty().setValue(Pos.CENTER);
+        //line.alignmentProperty().setValue(Pos.CENTER);
+        VBox column = new VBox(line, playAgainLine, quitLine);
+        column.alignmentProperty().setValue(Pos.CENTER);
 
-        Scene winnerScene = new Scene(pane);
+        StackPane pane = new StackPane(column);
+        pane.setPrefSize(1100, 500);
+        Scene winnerScene = new Scene(pane, 700, 500);
+        primaryStage.setScene(winnerScene);
+        primaryStage.show();
+
+        playAgainButton.setOnMouseClicked(event -> {
+            start(primaryStage);
+        });
+
+        quit.setOnMouseClicked(event -> {
+            primaryStage.close();
+        });
     }
 
 
