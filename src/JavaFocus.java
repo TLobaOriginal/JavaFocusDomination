@@ -190,7 +190,6 @@ public class JavaFocus extends Application {
             if(dRow >= 0 && dCol >= 0 && sRow >= 0 && sCol >= 0){
                 int steps = board.getBoard()[sRow][sCol].getStack().numberOfPieces();
                 if(distance(dCol, dRow, sCol, sRow) <= steps){
-                    //board.changePlayer();
                     hasWon = board.makeMove(dCol, dRow, sCol, sRow);
                     reservePossible = false;
                 }
